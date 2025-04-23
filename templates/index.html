@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-4">Download Media</h1>
+
+        <form method="POST" action="/" class="mb-6">
+            <div class="flex items-center border-b border-teal-500 py-2">
+                <input class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" type="text" name="url" placeholder="Enter URL (YouTube, Instagram, etc.)" aria-label="Media URL">
+                <button class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded" type="submit">
+                    Download
+                </button>
+            </div>
+        </form>
+
+        <h2 class="text-xl font-semibold mb-3">Download Status</h2>
+        <ul id="download-list" class="list-disc pl-5">
+            {% if downloads %}
+                {% for download in downloads %}
+                    <li class="mb-2">
+                        <span class="font-medium">{{ download.url }}</span> -
+                        Status: <span class="{{ 'text-yellow-600' if download.status == 'Pending' or download.status == 'Downloading...' else 'text-green-600' if download.status.startswith('Completed') else 'text-red-600' }}">{{ download.status }}</span>
+                        {% if download.status.startswith('Completed') and download.filename and download.filename != 'unknown_file' %}
+                            - <a href="{{ url_for('serve_download', filename=download.filename) }}" class="text-blue-500 hover:underline" download="{{ download.filename }}">Download File</a>
+                        {% elif download.status.startswith('Completed') and download.filename == 'unknown_file' %}
+                             - Filename could not be determined. Check server logs.
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>No downloads requested yet.</li>
+            {% endif %}
+        </ul>
+         <p class="mt-4 text-sm text-gray-600">
+            Note: Filename detection for gallery-dl is unreliable in this simple example.
+            For production, a more robust method to get the downloaded filename is required
+            (e.g., parsing tool output, using specific output templates, or monitoring directory changes more reliably).
+            This example also uses simple threading, which is not a robust background job queue for production.
+        </p>
+    </div>
+</body>
+</html>
