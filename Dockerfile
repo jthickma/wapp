@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Flask, gallery-dl, and yt-dlp
-RUN pip install --no-cache-dir Flask gallery-dl yt-dlp
+# Install Flask, gallery-dl, yt-dlp, and Gunicorn
+RUN pip install --no-cache-dir Flask gallery-dl yt-dlp gunicorn
 
 # Copy the current directory contents into the container at /app
 COPY . /app
@@ -25,7 +25,7 @@ RUN mkdir downloads
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Run the application
-# Using a production-ready WSGI server like Gunicorn is recommended for production
-# For this example, we'll use Flask's built-in server
-CMD ["flask", "run", "--host", "0.0.0.0"]
+# Run the application using Gunicorn
+# 'app:app' means run the 'app' object (your Flask app instance)
+# from the 'app.py' file (the first 'app')
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
