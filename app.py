@@ -48,16 +48,30 @@ def run_download(url, download_id):
         if result.returncode == 0:
             print(f"Download successful for {url}")
             download_entry['status'] = 'Completed'
-            # Identify the downloaded file by globbing
-            pattern = os.path.join(DOWNLOAD_FOLDER, f"{download_id}.*")
-            matches = glob.glob(pattern)
-            if matches:
-                filename = os.path.basename(matches[0])
+            # Attempt to identify the downloaded file by parsing stdout
+            filename = None
+            for line in result.stdout.splitlines():
+                # Simple heuristic: look for lines that seem like file paths within the download folder
+                if DOWNLOAD_FOLDER in line and str(download_id) in line:
+                    # Extract the part after the download folder
+                    parts = line.split(DOWNLOAD_FOLDER + os.sep)
+                    if len(parts) > 1:
+                        potential_filename = parts[-1].strip()
+                        # Basic validation: check if it looks like a filename and exists
+                        if potential_filename and not os.path.isdir(os.path.join(DOWNLOAD_FOLDER, potential_filename)):
+                             # Clean up potential extra output around the filename
+                            filename = potential_filename.split(' ')[0].split('"')[0].split("'")[0]
+                            # Ensure the extracted filename actually exists
+                            if os.path.exists(os.path.join(DOWNLOAD_FOLDER, filename)):
+                                break # Found a likely filename
+
+            if filename:
                 download_entry['filename'] = filename
                 print(f"Identified filename for {url}: {filename}")
             else:
-                download_entry['filename'] = None
-                print(f"No file found for pattern {pattern}")
+                download_entry['filename'] = 'unknown_file' # Indicate that filename could not be determined
+                print(f"Could not identify filename from stdout for {url}")
+                print(f"Stdout: {result.stdout}") # Log stdout for debugging
         else:
             print(f"Download failed for {url}: {result.stderr}")
             download_entry['status'] = f'Failed: {result.stderr[:100]}...'
@@ -104,4 +118,4 @@ def serve_download(filename):
 if __name__ == '__main__':
     # In a production Docker environment, you'd use a production WSGI server like Gunicorn
     # For local testing, running with app.run() is fine
-    app.run(debug=True, host='0.0.0.0')
+    app.run(host='0.0.0.0')

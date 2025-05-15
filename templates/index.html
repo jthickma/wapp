@@ -59,9 +59,8 @@
           {% endif %}
         </div>
          <p class="mt-6 text-xs text-gray-500 italic">
-            Note: Filename detection for gallery-dl is unreliable in this simple example.
-            For production, a more robust method to get the downloaded filename is required
-            (e.g., parsing tool output, using specific output templates, or monitoring directory changes more reliably).
+            Note: Filename detection is attempted by parsing tool output, but may not be reliable for all URLs.
+            For production, a more robust method to get the downloaded filename is recommended.
             This example also uses simple threading, which is not a robust background job queue for production.
         </p>
     </div>

@@ -1,0 +1,9 @@
+flask
+uuid
+requests
+flask-cors
+flask-socketio
+python-socketio
+flask-socketio[asyncio]
+eventlet
+flask-socketio[threading]
