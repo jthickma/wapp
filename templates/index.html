@@ -5,44 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+    <script>
+      tailwind.config = { theme: { extend: {} }, darkMode: 'media' }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="container mx-auto bg-white rounded-lg shadow-md p-6">
+<body class="bg-gray-100 p-4 font-inter">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-10">
         <h1 class="text-2xl font-bold mb-4">Download Media</h1>
 
-        <form method="POST" action="/" class="mb-6">
-            <div class="flex items-center border-b border-teal-500 py-2">
-                <input class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" type="text" name="url" placeholder="Enter URL (YouTube, Instagram, etc.)" aria-label="Media URL">
-                <button class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded" type="submit">
-                    Download
-                </button>
-            </div>
+        <form method="POST" action="/" class="mb-8">
+          <div class="flex w-full shadow-sm rounded-md overflow-hidden">
+            <input type="text" name="url" placeholder="Enter URL (YouTube, Instagram, etc.)"
+              class="flex-grow px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500" aria-label="Media URL">
+            <button type="submit"
+              class="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500">
+              Download
+            </button>
+          </div>
         </form>
 
         <h2 class="text-xl font-semibold mb-3">Download Status</h2>
-        <ul id="download-list" class="list-disc pl-5">
-            {% if downloads %}
-                {% for download in downloads %}
-                    <li class="mb-2">
-                        <span class="font-medium">{{ download.url }}</span> -
-                        Status: <span class="{{ 'text-yellow-600' if download.status == 'Pending' or download.status == 'Downloading...' else 'text-green-600' if download.status.startswith('Completed') else 'text-red-600' }}">{{ download.status }}</span>
-                        {% if download.status.startswith('Completed') and download.filename and download.filename != 'unknown_file' %}
-                            - <a href="{{ url_for('serve_download', filename=download.filename) }}" class="text-blue-500 hover:underline" download="{{ download.filename }}">Download File</a>
-                        {% elif download.status.startswith('Completed') and download.filename == 'unknown_file' %}
-                             - Filename could not be determined. Check server logs.
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            {% else %}
-                <li>No downloads requested yet.</li>
-            {% endif %}
-        </ul>
-         <p class="mt-4 text-sm text-gray-600">
+        <div id="download-list" class="space-y-4">
+          {% if downloads %}
+            {% for download in downloads %}
+              <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div class="flex items-center space-x-2">
+                  {% if download.status == 'Pending' or download.status == 'Downloading...' %}
+                    <svg class="h-5 w-5 animate-spin text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                  {% endif %}
+                  <span class="text-gray-800 font-medium">{{ download.url }}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full {% if download.status == 'Pending' or download.status == 'Downloading...' %}bg-yellow-100 text-yellow-800{% elif download.status.startswith('Completed') %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ download.status }}
+                  </span>
+                  {% if download.status.startswith('Completed') and download.filename and download.filename != 'unknown_file' %}
+                    <a href="{{ url_for('serve_download', filename=download.filename) }}" download="{{ download.filename }}"
+                      class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md">
+                      Download File
+                    </a>
+                  {% elif download.status.startswith('Completed') and download.filename == 'unknown_file' %}
+                    <span class="text-sm text-gray-500 italic">Filename unknown</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-gray-500">No downloads requested yet.</div>
+          {% endif %}
+        </div>
+         <p class="mt-6 text-xs text-gray-500 italic">
             Note: Filename detection for gallery-dl is unreliable in this simple example.
             For production, a more robust method to get the downloaded filename is required
             (e.g., parsing tool output, using specific output templates, or monitoring directory changes more reliably).
