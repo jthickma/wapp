@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Flask, gallery-dl, yt-dlp, and Gunicorn
-RUN pip install --no-cache-dir Flask gallery-dl yt-dlp gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the current directory contents into the container at /app
 COPY . /app
