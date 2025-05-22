@@ -4,65 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Downloader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Preconnect to Google Fonts for performance -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Localized Tailwind CSS config for potential future local build -->
     <script>
-      tailwind.config = { theme: { extend: {} }, darkMode: 'media' }
+      tailwind.config = { 
+        theme: { 
+          extend: {
+            fontFamily: {
+              inter: ['Inter', 'sans-serif'],
+            }
+          } 
+        }, 
+        darkMode: 'media' 
+      }
     </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      .animate-fade-in-down {
+        animation: fade-in-down 0.5s ease-out forwards;
+      }
+      
+      @keyframes fade-in-down {
+        0% {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Make download cards a bit more compact on mobile */
+      @media (max-width: 640px) {
+        .download-card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .download-card .status-section {
+          margin-top: 0.5rem;
+          width: 100%;
+        }
+      }
+    </style>
 </head>
-<body class="bg-gray-100 p-4 font-inter">
-    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-10">
-        <h1 class="text-2xl font-bold mb-4">Download Media</h1>
+<body class="bg-gray-100 p-4 font-inter antialiased">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8 mt-10">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Download Media</h1>
 
         <form method="POST" action="/" class="mb-8">
-          <div class="flex w-full shadow-sm rounded-md overflow-hidden">
-            <input type="text" name="url" placeholder="Enter URL (YouTube, Instagram, etc.)"
-              class="flex-grow px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500" aria-label="Media URL">
+          <div class="flex flex-col sm:flex-row w-full shadow-sm rounded-md overflow-hidden">
+            <label for="media-url" class="sr-only">Media URL</label>
+            <input type="text" name="url" id="media-url" placeholder="Enter URL (YouTube, Instagram, etc.)"
+              class="flex-grow px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent rounded-t-md sm:rounded-l-md sm:rounded-t-none" 
+              aria-label="Media URL">
             <button type="submit"
-              class="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500">
+              class="w-full sm:w-auto px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded-b-md sm:rounded-r-md sm:rounded-b-none transition ease-in-out duration-150">
               Download
             </button>
           </div>
         </form>
 
-        <h2 class="text-xl font-semibold mb-3">Download Status</h2>
-        <div id="download-list" class="space-y-4">
-          {% if downloads %}
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Download Status</h2>
+        <div id="download-list" class="space-y-4" x-data="{downloads: {{ 'true' if downloads else 'false' }} }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
+              <template x-if="!downloads">
+                <div class="text-gray-500 py-2">No downloads requested yet.</div>
+              </template>
+          <template x-if="downloads">
+            <div>
             {% for download in downloads %}
-              <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <div class="flex items-center space-x-2">
+              <div class="download-card flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div class="flex items-center space-x-3 mb-2 sm:mb-0">
                   {% if download.status == 'Pending' or download.status == 'Downloading...' %}
                     <svg class="h-5 w-5 animate-spin text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
                   {% endif %}
-                  <span class="text-gray-800 font-medium">{{ download.url }}</span>
+                  <span class="text-gray-800 font-medium truncate max-w-[calc(100vw-10rem)] sm:max-w-xs" title="{{ download.url }}">{{ download.url }}</span>
                 </div>
-                <div class="flex items-center space-x-3">
-                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full {% if download.status == 'Pending' or download.status == 'Downloading...' %}bg-yellow-100 text-yellow-800{% elif download.status.startswith('Completed') %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                <div class="status-section flex items-center space-x-3 text-sm">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                    {% if download.status == 'Pending' or download.status == 'Downloading...' %}bg-yellow-100 text-yellow-800
+                    {% elif download.status.startswith('Completed') %}bg-green-100 text-green-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
                     {{ download.status }}
                   </span>
                   {% if download.status.startswith('Completed') and download.filename and download.filename != 'unknown_file' %}
                     <a href="{{ url_for('serve_download', filename=download.filename) }}" download="{{ download.filename }}"
-                      class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md">
+                      class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md transition ease-in-out duration-150">
                       Download File
                     </a>
                   {% elif download.status.startswith('Completed') and download.filename == 'unknown_file' %}
-                    <span class="text-sm text-gray-500 italic">Filename unknown</span>
+                    <span class="text-xs text-gray-500 italic">Filename unknown</span>
                   {% endif %}
                 </div>
               </div>
             {% endfor %}
           {% else %}
-            <div class="text-gray-500">No downloads requested yet.</div>
+            <div class="text-gray-500 py-2">No downloads requested yet.</div>
           {% endif %}
         </div>
-         <p class="mt-6 text-xs text-gray-500 italic">
-            Note: Filename detection is attempted by parsing tool output, but may not be reliable for all URLs.
-            For production, a more robust method to get the downloaded filename is recommended.
-            This example also uses simple threading, which is not a robust background job queue for production.
-        </p>
+        
+        <!-- Alpine.js -->
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md animate-fade-in-down">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.492-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-700 font-semibold">
+                For production, a more robust method to get the downloaded filename is recommended.
+                <span class="block mt-1 text-xs text-yellow-600">This example also uses simple threading, which is not a robust background job queue for production. Consider using a dedicated task queue like Celery.</span>
+              </p>
+            </div>
+          </div>
+        </div>
     </div>
 </body>
 </html>
