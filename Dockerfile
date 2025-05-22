@@ -18,7 +18,7 @@ COPY . /app
 
 # Install Flask, gallery-dl, yt-dlp, and Gunicorn
 # This step was moved AFTER COPY . /app to ensure requirements.txt is available
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install Flask gunicorn yt-dlp gallery-dl
 
 # Create the directory for downloads
 RUN mkdir downloads

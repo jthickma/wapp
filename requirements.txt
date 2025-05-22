@@ -7,3 +7,4 @@ python-socketio
 flask-socketio[asyncio]
 eventlet
 flask-socketio[threading]
+gunicorn
