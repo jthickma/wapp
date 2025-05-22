@@ -13,11 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Flask, gallery-dl, yt-dlp, and Gunicorn
-RUN pip install --no-cache-dir -r requirements.txt
-
 # Copy the current directory contents into the container at /app
 COPY . /app
+
+# Install Flask, gallery-dl, yt-dlp, and Gunicorn
+# This step was moved AFTER COPY . /app to ensure requirements.txt is available
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create the directory for downloads
 RUN mkdir downloads
