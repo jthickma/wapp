@@ -69,12 +69,10 @@
         </form>
 
         <h2 class="text-xl font-semibold text-gray-700 mb-4">Download Status</h2>
-        <div id="download-list" class="space-y-4" x-data="{downloads: {{ 'true' if downloads else 'false' }} }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
-              <template x-if="!downloads">
-                <div class="text-gray-500 py-2">No downloads requested yet.</div>
-              </template>
-          <template x-if="downloads">
-            <div>
+        
+        <!-- Alpine.js data binding -->
+        <div id="download-list" class="space-y-4">
+          {% if downloads %}
             {% for download in downloads %}
               <div class="download-card flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <div class="flex items-center space-x-3 mb-2 sm:mb-0">

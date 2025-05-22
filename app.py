@@ -7,12 +7,14 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 import time # Import time for sleep
+from flask_cors import CORS
 
 # Thread pool for download tasks and lock for thread-safe operations
 executor = ThreadPoolExecutor(max_workers=4) # Limit concurrent downloads
 downloads_lock = Lock()
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Directory to store downloaded files
 DOWNLOAD_FOLDER = os.path.abspath('downloads') # Use absolute path
@@ -147,4 +149,4 @@ def serve_download(filename):
 if __name__ == '__main__':
     # In a production Docker environment, you'd use a production WSGI server like Gunicorn
     # For local testing, running with app.run() is fine. Use debug=True for development.
-    app.run(host='0.0.0.0', debug=True) # debug=True is good for development
+    app.run(host='0.0.0.0', port=12000, debug=True) # debug=True is good for development
