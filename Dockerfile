@@ -22,6 +22,14 @@ RUN pip install Flask gunicorn yt-dlp gallery-dl
 
 # Create the directory for downloads
 RUN mkdir downloads
+# Add to your existing Dockerfile
+RUN groupadd -r appuser && \
+    useradd -r -g appuser appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+VOLUME /app/downloads
+
 
 # Expose the port the app runs on
 EXPOSE 5000

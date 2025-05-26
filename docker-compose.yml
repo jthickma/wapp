@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./app
+    restart: unless-stopped
+    volumes:
+      - ./downloads:/app/downloads
+    networks:
+      - jthickkma-net
+    environment:
+      - FLASK_ENV=production
+
+  caddy:
+    image: caddy:2.6
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/ssl:/etc/caddy/ssl
+      - caddy_data:/data
+    networks:
+      - jthickkma-net
+
+volumes:
+  caddy_data:
+
+networks:
+  jthickkma-net:

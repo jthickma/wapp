@@ -1,0 +1,13 @@
+jthickkma.site, www.jthickkma.site {
+    tls /etc/caddy/ssl/ssl.pem /etc/caddy/ssl/ssl.key
+    
+    reverse_proxy app:5000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    log {
+        output file /var/log/caddy/jthickkma.log
+    }
+}
