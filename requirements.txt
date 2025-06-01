@@ -1,10 +1,11 @@
 flask
-uuid
-requests
 flask-cors
-flask-socketio
-python-socketio
-flask-socketio[asyncio]
-eventlet
-flask-socketio[threading]
+requests
+rq
+redis
 gunicorn
+
+# yt-dlp and gallery-dl are CLI tools.
+# They need to be installed in your Docker image (see Dockerfile).
+# If you find reliable Python wrappers that include/install the binaries,
+# you could add them here, but direct CLI usage via subprocess is common.

@@ -1,40 +1,32 @@
-# Use an official Python runtime as a parent image
-FROM python:3.13-slim
+# Start with a Python base image
+FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies required by gallery-dl and yt-dlp
-# yt-dlp requires ffmpeg for some formats
-# gallery-dl might require other dependencies depending on the site
+# Install system dependencies in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    git \
     ca-certificates \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy requirements first for better layer caching
+COPY requirements.txt .
 
-# Install Flask, gallery-dl, yt-dlp, and Gunicorn
-# This step was moved AFTER COPY . /app to ensure requirements.txt is available
-RUN pip install Flask gunicorn yt-dlp gallery-dl
+# Install Python dependencies including yt-dlp and gallery-dl
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir yt-dlp gallery-dl
 
-# Create the directory for downloads
-RUN mkdir downloads
-# Add to your existing Dockerfile
-RUN groupadd -r appuser && \
-    useradd -r -g appuser appuser && \
-    chown -R appuser:appuser /app
-
-USER appuser
-VOLUME /app/downloads
-
+# Copy the rest of the application code
+COPY . .
 
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Run the application using Gunicorn
-# 'app:app' means run the 'app' object (your Flask app instance)
-# from the 'app.py' file (the first 'app')
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=app.py
+
+# Default command (can be overridden by Coolify)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
