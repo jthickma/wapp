@@ -1,50 +1,14 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    networks:
-      - jthickkma-net
-    volumes:
-      - redis_data:/data
-
   app:
     build: .
     restart: unless-stopped
     ports:
-      # Map port 80 on the host to port 5000 in the container
-      - "80:5000"
+      - "12000:5000"
     volumes:
-      # This volume mapping is from your original file
-      - ./downloads:/app/persistent_downloads
-    networks:
-      - jthickkma-net
+      - ./downloads:/app/downloads
     environment:
       - FLASK_ENV=production
-      - REDIS_HOST=redis
-      - PERSISTENT_DOWNLOAD_DIR=/app/persistent_downloads
-    depends_on:
-      - redis
-
-  worker:
-    build: .
-    restart: unless-stopped
-    volumes:
-      - ./downloads:/app/persistent_downloads
-    networks:
-      - jthickkma-net
-    environment:
-      - REDIS_HOST=redis
-      - PERSISTENT_DOWNLOAD_DIR=/app/persistent_downloads
-    depends_on:
-      - redis
-    command: ["python", "worker.py"]
-
-volumes:
-  redis_data:
-
-networks:
-  jthickkma-net:
+      - PORT=5000
   
