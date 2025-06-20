@@ -1,32 +1,23 @@
-# Start with a Python base image
+# Use a slim Python base image
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies in a single layer
+# Install system dependencies, including ffmpeg for yt-dlp
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    ca-certificates \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better layer caching
+# Copy the requirements file and install Python dependencies
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies including yt-dlp and gallery-dl
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir yt-dlp gallery-dl
+# Install/update yt-dlp and gallery-dl using pip
+RUN pip install --no-cache-dir --upgrade yt-dlp gallery-dl
 
-# Copy the rest of the application code
+# Copy the rest of your application code into the container
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 5000
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=app.py
-
-# Default command (can be overridden by Coolify)
+# The default command to run the Flask app with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

@@ -1,3 +1,4 @@
+# docker-compose.yml
 version: '3.8'
 
 services:
@@ -12,7 +13,11 @@ services:
   app:
     build: .
     restart: unless-stopped
+    ports:
+      # Map port 80 on the host to port 5000 in the container
+      - "80:5000"
     volumes:
+      # This volume mapping is from your original file
       - ./downloads:/app/persistent_downloads
     networks:
       - jthickkma-net
@@ -37,22 +42,9 @@ services:
       - redis
     command: ["python", "worker.py"]
 
-  caddy:
-    image: caddy:2.6
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/ssl:/etc/caddy/ssl
-      - caddy_data:/data
-    networks:
-      - jthickkma-net
-
 volumes:
-  caddy_data:
   redis_data:
 
 networks:
   jthickkma-net:
+  
