@@ -1,11 +1,3 @@
-flask
-flask-cors
-requests
-rq
-redis
-gunicorn
-
-# yt-dlp and gallery-dl are CLI tools.
-# They need to be installed in your Docker image (see Dockerfile).
-# If you find reliable Python wrappers that include/install the binaries,
-# you could add them here, but direct CLI usage via subprocess is common.
+flask==2.3.3
+flask-cors==4.0.0
+gunicorn==21.2.0
