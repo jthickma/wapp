@@ -1,15 +1,41 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - jthickkma-net
+    volumes:
+      - redis_data:/data
+
   app:
-    build: ./app
+    build: .
     restart: unless-stopped
     volumes:
-      - ./downloads:/app/downloads
+      - ./downloads:/app/persistent_downloads
     networks:
       - jthickkma-net
     environment:
       - FLASK_ENV=production
+      - REDIS_HOST=redis
+      - PERSISTENT_DOWNLOAD_DIR=/app/persistent_downloads
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./downloads:/app/persistent_downloads
+    networks:
+      - jthickkma-net
+    environment:
+      - REDIS_HOST=redis
+      - PERSISTENT_DOWNLOAD_DIR=/app/persistent_downloads
+    depends_on:
+      - redis
+    command: ["python", "worker.py"]
 
   caddy:
     image: caddy:2.6
@@ -26,6 +52,7 @@ services:
 
 volumes:
   caddy_data:
+  redis_data:
 
 networks:
   jthickkma-net:
